@@ -1,0 +1,11 @@
+transaction_id,event_time,customer_id,amount,currency,item_count,payment_method,country
+tx_0001,2026-04-10T08:00:00+00:00,cust_1001,49.99,USD,1,card,US
+tx_0002,2026-04-10T08:03:00+00:00,cust_1002,12.50,USD,2,wallet,IN
+tx_0003,2026-04-10T08:07:00+00:00,cust_1003,220.00,USD,3,card,GB
+tx_0004,2026-04-10T08:10:00+00:00,cust_1004,89.00,USD,1,upi,IN
+tx_0005,2026-04-10T08:15:00+00:00,cust_1001,305.20,USD,4,card,US
+tx_0006,2026-04-10T08:18:00+00:00,cust_1005,17.75,USD,1,cod,DE
+tx_0007,2026-04-10T08:25:00+00:00,cust_1006,134.40,USD,2,card,SG
+tx_0008,2026-04-10T08:31:00+00:00,cust_1007,9.99,USD,1,wallet,AU
+tx_0009,2026-04-10T08:35:00+00:00,cust_1008,199.99,USD,2,card,US
+tx_0010,2026-04-10T08:42:00+00:00,cust_1009,410.00,USD,5,card,GB

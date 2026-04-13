@@ -1,0 +1,29 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+dist/
+build/
+
+# Local artifacts / data
+storage/local/artifacts/
+storage/local/metadata/
+storage/local/raw_mirror/
+storage/local/processed/
+storage/local/warehouse/
+storage/local/bi/
+
+# Airflow
+docker/airflow/logs/
+docker/airflow/plugins/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

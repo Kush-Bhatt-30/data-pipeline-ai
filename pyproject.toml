@@ -1,0 +1,26 @@
+[project]
+name = "data-pipeline-ai"
+version = "0.1.0"
+description = "Production-grade local data platform: batch + streaming ingestion, Spark processing, Airflow orchestration, ML training, and FastAPI serving."
+requires-python = ">=3.11"
+readme = "README.md"
+license = { text = "MIT" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"] # I = isort
+ignore = []
+
+[tool.mypy]
+python_version = "3.11"
+strict = false
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true

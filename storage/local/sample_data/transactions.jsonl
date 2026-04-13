@@ -1,0 +1,6 @@
+{"transaction_id":"tx_j001","event_time":"2026-04-10T09:00:00+00:00","customer_id":"cust_2001","amount":15.20,"currency":"USD","item_count":1,"payment_method":"wallet","country":"IN"}
+{"transaction_id":"tx_j002","event_time":"2026-04-10T09:05:00+00:00","customer_id":"cust_2002","amount":78.99,"currency":"USD","item_count":2,"payment_method":"card","country":"US"}
+{"transaction_id":"tx_j003","event_time":"2026-04-10T09:12:00+00:00","customer_id":"cust_2003","amount":260.50,"currency":"USD","item_count":3,"payment_method":"card","country":"DE"}
+{"transaction_id":"tx_j004","event_time":"2026-04-10T09:20:00+00:00","customer_id":"cust_2004","amount":33.33,"currency":"USD","item_count":1,"payment_method":"upi","country":"IN"}
+{"transaction_id":"tx_j005","event_time":"2026-04-10T09:29:00+00:00","customer_id":"cust_2005","amount":510.00,"currency":"USD","item_count":6,"payment_method":"card","country":"GB"}
+{"transaction_id":"tx_evil_001","event_time":"2026-04-10T10:00:00+00:00","customer_id":"cust_9999","amount":-500.00,"currency":"XYZ","item_count":1,"payment_method":"card","country":"US"}

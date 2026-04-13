@@ -1,0 +1,58 @@
+app:
+  name: data-pipeline-ai
+  env: local
+  log_level: INFO
+
+paths:
+  # Inside containers we mount ./storage/local -> /opt/data-pipeline-ai/storage/local
+  local_storage_root: storage/local
+  model_path: storage/local/artifacts/model.joblib
+
+s3:
+  endpoint_url: http://localstack:4566
+  region: us-east-1
+  access_key_id: test
+  secret_access_key: test
+  buckets:
+    raw: dpa-raw
+    processed: dpa-processed
+    warehouse: dpa-warehouse
+    models: dpa-models
+
+kafka:
+  bootstrap_servers: kafka:9092
+  topic: transactions
+  group_id: dpa-consumer
+
+spark:
+  # For local demo we keep Spark I/O on a local mirror (raw_mirror/processed/) to avoid S3A jar wrangling.
+  # Set DPA__SPARK__IO_MODE=s3a if you want Spark to read/write directly from S3 via s3a:// URIs.
+  master_url: spark://spark-master:7077
+  app_name: dpa-spark
+  io_mode: local_mirror  # local_mirror | s3a
+  output_format: parquet # parquet | delta
+  local_mirror:
+    raw_dir: storage/local/raw_mirror
+    processed_dir: storage/local/processed
+    bi_dir: storage/local/bi
+    warehouse_dir: storage/local/warehouse
+
+warehouse:
+  type: mock
+  # A real implementation would push to BigQuery/Snowflake; locally we write CSV/Parquet exports.
+
+ml:
+  feature_columns:
+    numeric: [amount, item_count]
+    categorical: [payment_method, country]
+  label_column: is_high_value
+  threshold_amount: 200.0
+
+api:
+  host: 0.0.0.0
+  port: 8000
+
+sources:
+  # For local runs this hits the FastAPI container itself (it exposes a /source/transactions generator endpoint).
+  rest_api_url: http://api:8000/source/transactions?count=200
+  batch_files_dir: storage/local/sample_data

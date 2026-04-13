@@ -1,0 +1,12 @@
+-r requirements.txt
+
+# Formatting and Linting
+ruff==0.1.14
+pre-commit==3.6.0
+
+# Type Checking
+mypy==1.8.0
+types-PyYAML==6.0.12.12
+types-requests==2.31.0.20240125
+
+# Testing (pytest is already in requirements.txt, but we keep QA tools here)
