@@ -128,3 +128,4 @@ data-pipeline-ai/
 ## Resume-Ready Description
 
 Built a cloud-ready, end-to-end data platform implementing a Lambda architecture with batch + streaming ingestion (Kafka), raw/processed zone storage on S3-compatible object storage (LocalStack), incremental partitioned transformations in PySpark, orchestration with Airflow (retries/failure handling), an ML feature engineering + training/prediction layer (scikit-learn pipelines), and a FastAPI model serving API. Delivered a docker-compose local environment that reproduces the full platform stack for development and demos.
+"# data-pipeline-ai" 
