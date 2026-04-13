@@ -163,7 +163,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     csv_path = sample_dir / "transactions.csv"
     jsonl_path = sample_dir / "transactions.jsonl"
 
-    txs: List[Transaction] = []
+    txs = []
     if csv_path.exists():
         txs.extend(read_transactions_from_csv(csv_path))
     if jsonl_path.exists():
