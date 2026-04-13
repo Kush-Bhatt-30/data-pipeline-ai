@@ -1,131 +1,123 @@
-# data-pipeline-ai
+# 🚀 Enterprise Data Pipeline Architecture: Lambda + AI MLOps
 
-An end-to-end, production-style data engineering platform you can run locally with Docker Compose: batch + streaming ingestion (Lambda architecture), raw/processed storage zones, Spark processing, Airflow orchestration, an ML training/prediction layer, and a FastAPI model serving API.
+[![CI Pipeline](https://github.com/Kush-Bhatt-30/data-pipeline-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/Kush-Bhatt-30/data-pipeline-ai/actions)
+[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
+[![Strict Typing](https://img.shields.io/badge/mypy-strict-blue)](https://mypy.readthedocs.io/en/stable/)
+[![Code Style: Ruff](https://img.shields.io/badge/code%20style-ruff-262626.svg)](https://github.com/astral-sh/ruff)
+[![Testing: Pytest](https://img.shields.io/badge/testing-pytest--cov-yellow.svg)](https://docs.pytest.org/)
 
-## Architecture
+An end-to-end, production-ready data engineering platform executing a full **Lambda Architecture**. This repository bridges the gap between proof-of-concept AI pipelines and highly resilient, Fortune 500-level data systems.
 
-**Sources**
-- REST API ingestion: pulls transactions from a REST endpoint (locally we expose a generator at `api:/source/transactions`).
-- Batch files: CSV/JSONL batch drops under `storage/local/sample_data/`.
-- Kafka streaming: a producer generates transaction events to a topic and a consumer lands them to storage.
+## 🌟 Enterprise Features Integrated
 
-**Ingestion Layer (Python)**
-- Batch ingestion script writes raw data to an S3-compatible object store (LocalStack) and also writes a **local mirror** for Spark.
-- Kafka consumer batches messages and flushes to raw storage on an interval for fault tolerance.
+- **Infrastructure as Code (IaC):** Utilizes Terraform to programmatically define and audit the S3 data lakes over LocalStack.
+- **Fail-Fast Data Contracts:** PySpark validation layers dynamically reject bad data (null amounts, invalid currencies) *before* it pollutes the data warehouse.
+- **Strict Developer Experience (DX):** Code simply cannot be merged unless it passes the `.pre-commit` pipeline enforcing Type Safety (`mypy`) and lint checks (`ruff`).
+- **Comprehensive CI/CD:** GitHub Actions workflow automatically benchmarks test coverage, code quality, and security vulnerability scans (`bandit`) natively.
+- **Observability:** JSON structured logging feeds natively into DataDog/ELK pipelines with `on_failure_callback` Airflow alerts simulating immediate PagerDuty dispatch.
 
-**Storage Layer**
-- **Raw zone:** S3-compatible (LocalStack S3) at `s3://dpa-raw/transactions/dt=YYYY-MM-DD/source=.../*.jsonl`.
-- **Processed zone:** partitioned Parquet (incremental `dt=` partitions) written to `storage/local/processed/` and optionally uploaded to `s3://dpa-processed/`.
-- **Warehouse (mock):** daily aggregate CSV exports under `storage/local/warehouse/` (a stand-in for BigQuery/Snowflake).
+---
 
-**Processing Layer (PySpark)**
-- Reads raw JSONL (from the local mirror for a runnable local demo).
-- Cleans, validates, deduplicates, enriches (adds timestamps + `dt`).
-- Writes partitioned Parquet and BI-friendly aggregates.
+## 🏗️ Technical Architecture Diagram
 
-**Orchestration (Airflow)**
-- A daily DAG runs: bootstrap storage → batch ingest (REST + files) → Spark processing → model training → batch predictions.
-- Retries + failure semantics are configured via DAG default args.
+```mermaid
+graph TD
+    %% Ingestion
+    REST[REST Endpoint<br/>Source System] -->|Batch via Python| RawS3[(Raw Zone S3<br/>LocalStack)]
+    KafkaP[Kafka Producer<br/>Streaming Source] --> KafkaTop[Kafka Topic<br/>'transactions']
+    KafkaTop -->|Kafka Consumer| RawS3
 
-**AI Layer (scikit-learn)**
-- Feature engineering + model training using a `Pipeline`:
-  - Numeric: `amount`, `item_count`
-  - Categorical: `payment_method`, `country`
-- Label for demo: `is_high_value` derived from `amount >= threshold` (configurable).
-- Batch prediction produces `storage/local/bi/predictions/dt=.../predictions.parquet`.
+    %% Processing & Data Contracts
+    RawS3 -->|Read JSONL| Spark[PySpark Processor<br/>Incrementally by dt]
+    Spark -->|Apply Transformation| Contracts{Data Contract<br/>Validator}
+    
+    Contracts -- Fails --> Alert([Slack / PagerDuty<br/>Airflow Callback])
+    Contracts -- Passes --> ProcessedS3[(Processed Zone Parquet<br/>LocalStack)]
+    
+    %% AI & Orchestration
+    ProcessedS3 --> Trainer[Scikit-Learn<br/>Model Trainer]
+    Trainer -->|Output joblib| ArtifactS3[(Model Artifact<br/>S3)]
+    
+    Airflow((Apache Airflow<br/>DAG Orchestrator)) -.- |Triggers & Monitors| REST
+    Airflow -.- Spark
+    Airflow -.- Trainer
 
-**Serving Layer (FastAPI)**
-- `POST /predict` scores a single transaction feature payload.
-- `GET /model/meta` reports whether the model artifact is loaded and shows metadata.
-- `GET /source/transactions` is a local demo source endpoint for REST ingestion.
+    %% Serving
+    ArtifactS3 --> API[FastAPI Server]
+    User((Client Request)) --> API
+```
 
-## Tech Stack
-- Python 3.11 (Docker images)
-- Kafka + Zookeeper (Confluent images)
-- LocalStack (S3)
-- PySpark (Spark processing)
-- Apache Airflow (orchestration)
-- scikit-learn (ML)
-- FastAPI + Uvicorn (serving)
-- Parquet (pyarrow) for processed/BI datasets
+---
 
-## Local Setup (Docker Compose)
+## 🛠️ Technology Stack
+| Category | Technology | Purpose |
+|----------|-------------|---------|
+| **Ingestion** | `Kafka` & `Python` | Real-time streaming and REST batch ingestion logic. |
+| **Storage** | `LocalStack (S3)` | Enterprise-grade cloud object storage simulation. |
+| **Processing** | `PySpark` | Horizontally scalable incremental big-data transformations. |
+| **Orchestration** | `Apache Airflow` | Task dependency management and alerting. |
+| **ML & Serving** | `Scikit-Learn` & `FastAPI` | Training ML Models & High-concurrency caching inference engine. |
+| **IaC & DX** | `Terraform`, `Ruff`, `Mypy` | Cloud infrastructure deployment, strict static typing, and linting. |
 
-From the repo root:
+---
+
+## 🚀 Getting Started
+
+### 1. Provision Infrastructure
+Start the core systems (Kafka, Airflow, FastAPI, Spark) using Docker:
 
 ```bash
 docker compose -f docker/docker-compose.yml up --build
 ```
+*Wait for `airflow-init` to complete before accessing `http://localhost:8081`.*
 
-Services:
-- FastAPI API: `http://localhost:8000`
-- Airflow UI: `http://localhost:8081` (user: `airflow`, password: `airflow`)
-- LocalStack (S3): `http://localhost:4566`
-- Kafka exposed on host: `localhost:29092` (internal: `kafka:9092`)
-- Spark master UI: `http://localhost:8080`
-
-## Run The Pipeline
-
-### 1) Streaming path (always-on)
-`kafka-producer` and `kafka-consumer` start with Compose:
-- Producer emits events into Kafka topic `transactions`
-- Consumer lands raw JSONL into:
-  - S3 (LocalStack): `s3://dpa-raw/transactions/dt=.../source=kafka/*.jsonl`
-  - Local mirror: `storage/local/raw_mirror/...`
-
-### 2) Batch path (Airflow DAG)
-1. Open Airflow UI at `http://localhost:8081`
-2. Find the DAG `data_pipeline_ai_lambda`
-3. Unpause and trigger it (it runs daily, `@daily`, with `catchup=False`)
-
-Outputs:
-- Processed Parquet: `storage/local/processed/transactions/dt=YYYY-MM-DD/`
-- BI aggregates: `storage/local/bi/daily_metrics/dt=YYYY-MM-DD/`
-- Warehouse mock export: `storage/local/warehouse/dt=YYYY-MM-DD/`
-- Model artifact: `storage/local/artifacts/model.joblib`
-- Batch predictions: `storage/local/bi/predictions/dt=YYYY-MM-DD/predictions.parquet`
-
-## Data Flow (End-to-End)
-
-1. **Ingestion**
-   - REST + files ingestion write raw JSONL to S3 raw zone and local mirror.
-   - Kafka consumer writes streaming raw JSONL to the same raw zone.
-2. **Processing (Spark)**
-   - Incremental per-day processing (`dt=...`).
-   - Cleans + dedupes + validates, then writes partitioned Parquet.
-   - Builds daily aggregates for BI/warehouse.
-3. **AI**
-   - Train a model from processed Parquet.
-   - Generate batch predictions and export to BI folder.
-4. **Serving**
-   - FastAPI loads the trained model artifact and serves predictions.
-
-## Configuration
-
-Configuration is YAML-driven with environment overrides:
-- Base config: `config/config.yaml`
-- Override any key via env vars using `DPA__` and `__` nesting:
-  - `DPA__S3__ENDPOINT_URL=http://localstack:4566`
-  - `DPA__KAFKA__BOOTSTRAP_SERVERS=kafka:9092`
-  - `DPA__SPARK__MASTER_URL=local[*]`
-
-## Repo Layout
-
-```
-data-pipeline-ai/
-  ingestion/        # REST + files batch ingestion, Kafka producer/consumer
-  processing/       # PySpark transformations and incremental job
-  orchestration/    # Airflow DAG
-  storage/          # S3 client + local storage folders
-  ai/               # Training + batch prediction
-  api/              # FastAPI serving
-  config/           # YAML config + loader
-  docker/           # Dockerfile + docker-compose + Airflow image
-  tests/            # Unit tests (Docker-friendly)
-  README.md
+### 2. Apply Terraform Definitions (Optional mock)
+Simulate enterprise infrastructure setup by hooking Terraform into LocalStack:
+```bash
+cd terraform
+terraform init
+terraform apply
 ```
 
-## Resume-Ready Description
+### 3. Run The Pipeline (Airflow)
+1. Open the Airflow UI: `http://localhost:8081` *(user: airflow, pass: airflow)*
+2. Find the DAG `data_pipeline_ai_lambda`.
+3. Unpause the DAG and trigger it manually.
 
-Built a cloud-ready, end-to-end data platform implementing a Lambda architecture with batch + streaming ingestion (Kafka), raw/processed zone storage on S3-compatible object storage (LocalStack), incremental partitioned transformations in PySpark, orchestration with Airflow (retries/failure handling), an ML feature engineering + training/prediction layer (scikit-learn pipelines), and a FastAPI model serving API. Delivered a docker-compose local environment that reproduces the full platform stack for development and demos.
-"# data-pipeline-ai" 
+Watch as Airflow bootstraps storage paths, generates synthetic REST data, processes it through the PySpark **Data Contract Engine**, triggers model training, and generates batch predictions.
+
+---
+
+## 🛡️ The "Data Contract" Engine
+
+The traditional pipeline breaks downstream systems when the API source abruptly changes schema. We resolve this by extending PySpark logic:
+
+```python
+        (
+            DataContractValidator(clean_df)
+            .expect_table_row_count_to_be_between(min_value=1)
+            .expect_column_values_to_not_be_null("amount")
+            .expect_column_values_to_be_in_set("currency", ["USD", "EUR", "GBP", "JPY"])
+            .expect_column_values_to_be_between("amount", min_v=0.01, max_v=999999.0)
+            .validate()
+        )
+```
+If constraints violate on incoming payload, the pipeline fails early organically, ensuring clean, downstream Data Warehouse compliance.
+
+---
+
+## 👨‍💻 Developer Workflow
+
+Before raising a PR, your code must pass strict constraints:
+```bash
+# 1. Install Dev Tools
+pip install -r requirements-dev.txt
+
+# 2. Setup git hooks (Runs Ruff & Mypy automatically on git commit)
+pre-commit install
+
+# 3. Manually execute test suite locally
+pytest tests/ --cov=./ 
+```
+
+**Developed as an architectural demonstration mapping conceptual data pipelines into Fortune-500 production rigor.**
