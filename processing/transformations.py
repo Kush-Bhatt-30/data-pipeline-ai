@@ -77,11 +77,14 @@ class DataContractValidator:
     Mimics Great Expectations (GX) interface but native to PySpark.
     Fail-fast mechanism prevents bad data from reaching the warehouse.
     """
+
     def __init__(self, df: DataFrame):
         self.df = df
         self.errors: list[str] = []
 
-    def expect_table_row_count_to_be_between(self, min_value: int, max_value: int | None = None) -> DataContractValidator:
+    def expect_table_row_count_to_be_between(
+        self, min_value: int, max_value: int | None = None
+    ) -> DataContractValidator:
         cnt = self.df.count()
         if min_value is not None and cnt < min_value:
             self.errors.append(f"Row count {cnt} is less than minimum required {min_value}")
@@ -95,21 +98,31 @@ class DataContractValidator:
             self.errors.append(f"Column '{column}' contains {null_cnt} null values")
         return self
 
-    def expect_column_values_to_be_in_set(self, column: str, value_set: list[str]) -> DataContractValidator:
+    def expect_column_values_to_be_in_set(
+        self, column: str, value_set: list[str]
+    ) -> DataContractValidator:
         invalid_cnt = self.df.where(~F.col(column).isin(value_set)).count()
         if invalid_cnt > 0:
-            self.errors.append(f"Column '{column}' contains {invalid_cnt} values not in permitted set {value_set}")
+            self.errors.append(
+                f"Column '{column}' contains {invalid_cnt} values not in permitted set {value_set}"
+            )
         return self
 
-    def expect_column_values_to_be_between(self, column: str, min_v: float, max_v: float) -> DataContractValidator:
+    def expect_column_values_to_be_between(
+        self, column: str, min_v: float, max_v: float
+    ) -> DataContractValidator:
         invalid_cnt = self.df.where((F.col(column) < min_v) | (F.col(column) > max_v)).count()
         if invalid_cnt > 0:
-            self.errors.append(f"Column '{column}' contains {invalid_cnt} values outside range [{min_v}, {max_v}]")
+            self.errors.append(
+                f"Column '{column}' contains {invalid_cnt} values outside range [{min_v}, {max_v}]"
+            )
         return self
 
     def validate(self) -> None:
         if self.errors:
-            error_msg = "DATA CONTRACT VIOLATION(S) DETECTED:\n" + "\n".join(f"- {e}" for e in self.errors)
+            error_msg = "DATA CONTRACT VIOLATION(S) DETECTED:\n" + "\n".join(
+                f"- {e}" for e in self.errors
+            )
             logger.error(error_msg)
             raise ValueError(error_msg)
         logger.info("All Data Contract Expectations passed successfully!")

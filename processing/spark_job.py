@@ -8,15 +8,14 @@ from pathlib import Path
 from typing import List, Optional
 
 from pyspark.sql import SparkSession
-from pyspark.sql import functions as F
 
 from config.logging import configure_logging
 from config.settings import load_settings
 from processing.transformations import (
+    DataContractValidator,
     aggregate_daily,
     clean_and_enrich,
     read_raw_transactions_jsonl,
-    DataContractValidator,
 )
 from storage.s3_client import ensure_buckets, env_s3_buckets, upload_directory
 

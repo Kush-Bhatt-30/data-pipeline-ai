@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from datetime import datetime, timedelta
 
 from airflow.decorators import dag, task
@@ -18,15 +19,20 @@ from ingestion.api_ingestion import (
 from processing.spark_job import run as spark_run
 from storage.s3_client import ensure_buckets, env_s3_buckets
 
-import logging
 logger = logging.getLogger(__name__)
+
 
 def failure_alert(context):
     """
     Mock Slack/PagerDuty alert on task failure.
     """
     task_instance = context.get("task_instance")
-    logger.error("🚨 ALERT: Task %s failed in DAG %s. Triggering PagerDuty/Slack...", task_instance.task_id, task_instance.dag_id)
+    logger.error(
+        "🚨 ALERT: Task %s failed in DAG %s. Triggering PagerDuty/Slack...",
+        task_instance.task_id,
+        task_instance.dag_id,
+    )
+
 
 DEFAULT_ARGS = {
     "owner": "data-platform",
