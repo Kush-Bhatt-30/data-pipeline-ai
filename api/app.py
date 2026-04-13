@@ -54,6 +54,22 @@ _MODEL_CACHE: Dict[str, Dict[str, Any]] = {}
 
 
 def _load_model(model_path: Path) -> Dict[str, Any]:
+    """
+    Loads and caches the trained machine learning pipeline artifact.
+    
+    Implementing an in-memory cache boundary ensures high-concurrency 
+    API requests do not incur disk I/O bottlenecks.
+    
+    Args:
+        model_path (Path): Absolute path to the serialized joblib artifact.
+
+    Raises:
+        FileNotFoundError: If the model artifact has not been published yet.
+        ValueError: If the loaded artifact violates the expected pipeline schema.
+
+    Returns:
+        Dict[str, Any]: The operational ML model and associated lineage metadata.
+    """
     if "model" in _MODEL_CACHE:
         return _MODEL_CACHE["model"]
 
@@ -69,6 +85,15 @@ def _load_model(model_path: Path) -> Dict[str, Any]:
 
 
 def create_app() -> FastAPI:
+    """
+    Application Factory for the prediction server.
+    
+    This factory initialization pattern maps routing, dependency injection, 
+    and systemic logging protocols dynamically up-front.
+    
+    Returns:
+        FastAPI: The initialized web server application hook.
+    """
     s = load_settings()
     configure_logging(str(s.get("app.log_level", "INFO")))
 

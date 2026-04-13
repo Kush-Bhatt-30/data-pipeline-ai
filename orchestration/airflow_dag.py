@@ -52,6 +52,14 @@ DEFAULT_ARGS = {
     tags=["data-pipeline-ai", "lambda-architecture"],
 )
 def data_pipeline_ai_lambda():
+    """
+    Main entry point for the Lambda Architecture ingestion orchestrator.
+    
+    This DAG enforces an idempotent, day-partitioned batch pipeline.
+    It provisions necessary S3 storage abstractions natively via LocalStack,
+    pulls from upstream API endpoints, triggers the fault-tolerant PySpark 
+    validation/processing engine, and publishes the ML output artifacts.
+    """
     @task
     def bootstrap_storage() -> None:
         s = load_settings()
@@ -61,6 +69,10 @@ def data_pipeline_ai_lambda():
 
     @task
     def ingest_rest(ds: str) -> None:
+        """
+        Executes outbound micro-batch extraction from the primary REST generic endpoint.
+        Uses logical execution dates (ds) mapped organically to the Spark Partitioner.
+        """
         s = load_settings()
         configure_logging(str(s.get("app.log_level", "INFO")))
         url = str(s.get("sources.rest_api_url"))
