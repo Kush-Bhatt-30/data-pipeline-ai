@@ -56,10 +56,10 @@ _MODEL_CACHE: Dict[str, Dict[str, Any]] = {}
 def _load_model(model_path: Path) -> Dict[str, Any]:
     """
     Loads and caches the trained machine learning pipeline artifact.
-    
-    Implementing an in-memory cache boundary ensures high-concurrency 
+
+    Implementing an in-memory cache boundary ensures high-concurrency
     API requests do not incur disk I/O bottlenecks.
-    
+
     Args:
         model_path (Path): Absolute path to the serialized joblib artifact.
 
@@ -87,10 +87,10 @@ def _load_model(model_path: Path) -> Dict[str, Any]:
 def create_app() -> FastAPI:
     """
     Application Factory for the prediction server.
-    
-    This factory initialization pattern maps routing, dependency injection, 
+
+    This factory initialization pattern maps routing, dependency injection,
     and systemic logging protocols dynamically up-front.
-    
+
     Returns:
         FastAPI: The initialized web server application hook.
     """

@@ -25,9 +25,9 @@ logger = logging.getLogger(__name__)
 def _spark_session(master_url: str, app_name: str) -> SparkSession:
     """
     Initializes a highly fault-tolerant PySpark Session.
-    
-    Configures critical dynamic partition overwrite modes and strictly 
-    binds the executor timezone to UTC to prevent disjointed analytics 
+
+    Configures critical dynamic partition overwrite modes and strictly
+    binds the executor timezone to UTC to prevent disjointed analytics
     across distributed server clusters.
     """
     builder = SparkSession.builder.appName(app_name)
@@ -63,9 +63,9 @@ def _resolve_input_paths_local(raw_root: Path, dt: str) -> List[str]:
 def run(dt: str) -> None:
     """
     Executes the PySpark Lambda batching operation for a single partition.
-    
+
     Performs data cleansing, strictly enforces data contracts, and commits
-    parquets to the analytical warehouse. Designed to be safely idempotent 
+    parquets to the analytical warehouse. Designed to be safely idempotent
     via dynamic partitioning.
 
     Args:
