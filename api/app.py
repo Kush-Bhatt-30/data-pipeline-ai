@@ -50,7 +50,7 @@ class SourceTransaction(BaseModel):
     country: str
 
 
-_MODEL_CACHE: Dict[str, Any] = {}
+_MODEL_CACHE: Dict[str, Dict[str, Any]] = {}
 
 
 def _load_model(model_path: Path) -> Dict[str, Any]:
